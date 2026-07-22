@@ -1,0 +1,79 @@
+services:
+  # ── PostgreSQL with pgvector extension ──
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: docrag_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: docrag
+    ports:
+      - "5450:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d docrag"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+  
+  # ── Redis for caching + Celery broker ──
+  redis:
+    image: redis:7.4-alpine
+    container_name: docrag_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+  
+  # ── FastAPI application server ──
+  api:
+    container_name: docrag_api
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app                          # Live code reload
+      - storage_data:/app/storage/uploads       # Uploaded documents
+      - hf_cache_data:/root/.cache/huggingface  # Embedding model cache
+    command: ["bash", "/app/docker/scripts/start-api.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+  
+  # ── Celery worker for background processing ──
+  worker:
+    container_name: docrag_worker
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - storage_data:/app/storage/uploads
+      - hf_cache_data:/root/.cache/huggingface
+    command: ["bash", "/app/docker/scripts/start-worker.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:     # Persist database across restarts
+  storage_data:      # Persist uploaded files
+  hf_cache_data:     # Persist downloaded ML models (1GB+)

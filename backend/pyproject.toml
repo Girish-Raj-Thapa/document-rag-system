@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docrag-backend"
+version = "0.1.0"
+description = "Document Intelligence Platform — RAG Backend"
+requires-python = ">=3.11"
+dependencies = [
+    # --- Web Framework ---
+    "fastapi==0.115.0",
+    "uvicorn[standard]==0.30.6",
+    "python-multipart==0.0.9",       # Required for file uploads in FastAPI
+
+    # --- Database ---
+    "sqlalchemy==2.0.35",
+    "alembic==1.13.2",
+    "psycopg[binary]==3.2.1",        # Async PostgreSQL driver (psycopg3)
+    "pgvector==0.3.4",               # pgvector Python bindings
+
+    # --- Validation & Config ---
+    "pydantic==2.9.2",
+    "pydantic-settings==2.5.2",      # Reads settings from .env files
+    "email-validator==2.2.0",        # For Pydantic's EmailStr type
+
+    # --- Auth & Security ---
+    "python-jose[cryptography]==3.3.0",  # JWT encoding/decoding
+    "passlib[bcrypt]==1.7.4",            # Password hashing
+    "bcrypt==4.1.3",                     # bcrypt backend for passlib
+
+    # --- Cache & Background Jobs ---
+    "redis==5.0.8",
+    "celery==5.4.0",
+
+    # --- AI / ML ---
+    "sentence-transformers>=3.0.0",  # Embedding model + cross-encoder reranker
+    "tiktoken>=0.7.0",               # Token counting (matches OpenAI tokenizer)
+
+    # --- Document Parsing ---
+    "unstructured[all-docs]>=0.14.0",  # Layout-aware PDF/DOCX extraction
+    "nltk>=3.8",                        # NLP tokenization for unstructured
+
+    # --- LLM Providers ---
+    "openai>=1.35.0",
+    "google-genai>=0.1.2",
+    "httpx>=0.27.0",                 # Async HTTP client for Ollama + OpenAI streaming
+
+    # --- Resilience ---
+    "tenacity>=8.4.2",              # Retry with exponential backoff
+    "greenlet==3.1.1",              # Required by SQLAlchemy for async
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.3",
+    "pytest-asyncio==0.24.0",
+    "httpx==0.27.2",                 # Test client for FastAPI
+    "ruff==0.6.7",                   # Linter + formatter
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
