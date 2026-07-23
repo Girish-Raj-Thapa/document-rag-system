@@ -19,3 +19,9 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     current_refresh_jti: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
 
+    # Relationships
+    workspace_memberships = relationship(
+        "WorkspaceMember",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )

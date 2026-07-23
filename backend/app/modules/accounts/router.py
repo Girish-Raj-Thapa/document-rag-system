@@ -73,7 +73,9 @@ async def refresh_token(
     db: AsyncSession = Depends(get_db),
     _rate_limit = Depends(RateLimiter(max_requests=5, window_seconds=60))
 ):
-    """Issue a new access token using the HttpOnly refresh cookie."""
+    """
+    Issue a new access token using the HttpOnly refresh cookie.
+    """
     refresh_token = request.cookies.get(settings.REFRESH_COOKIE_NAME)
     if not refresh_token:
         raise AuthenticationError("Missing refresh token cookie.")
@@ -100,7 +102,9 @@ async def refresh_token(
     response_model=ApiResponse[None],
 )
 async def logout(response: Response):
-    """Clear the auth cookies."""
+    """
+    Clear the auth cookies.
+    """
     clear_auth_cookies(response)
     return ApiResponse(message="Logged out successfully")
 

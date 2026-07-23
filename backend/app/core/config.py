@@ -5,6 +5,7 @@ Uses pydantic-settings to automatically read from .env files.
 Every setting has a default so the app boots without manual configuration.
 """
 
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -50,12 +51,11 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://host.docker.internal:11434"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=os.environ.get("ENV_FILE", ".env"),
         env_file_encoding="utf-8",
         case_sensitive=True,    # DATABASE_URL != database_url
         extra="forbid",         # Fail loudly if typo in env vars
     )
-
 
 def get_settings() -> Settings:
     """

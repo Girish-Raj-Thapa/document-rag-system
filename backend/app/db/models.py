@@ -10,3 +10,4 @@ Add imports here as you build each module.
 """
 
 from app.modules.accounts.models import User
+from app.modules.workspaces.models import Workspace, WorkspaceMember

@@ -17,20 +17,38 @@ class AccountService:
 
     async def register_user(self, payload: RegisterRequest) -> User:
         """
-        Register a new user.
+        Register a new user and auto-create a default personal workspace.
         """
         normalized_email = payload.email.lower().strip()
+        full_name = payload.full_name.strip()
         
         # Hash password and create user
         hashed_pw = hash_password(payload.password)
         user = await self.user_repo.create(
             email=normalized_email,
-            full_name=payload.full_name.strip(),
+            full_name=full_name,
             password=hashed_pw,
         )
 
-        # Commit the transaction
-        await self.db.commit()
+        # Auto-create a default workspace for the new user
+        # Note: self.user_repo.create() uses flush(), so `user.id` is available here
+        # and both operations will be committed together at the end.
+        from app.modules.workspaces.service import WorkspaceService
+        from app.modules.workspaces.schemas import WorkspaceCreate
+        
+        workspace_service = WorkspaceService(self.db)
+        await workspace_service.create_workspace(
+            user=user, 
+            payload=WorkspaceCreate(name=f"{full_name}'s Workspace")
+        )
+
+        # Commit the transaction (commits both the user and the workspace)
+        # Note: The workspace_service.create_workspace actually calls commit inside it,
+        # which is fine as it will commit the entire transaction.
+        # But wait, create_workspace calls commit(). So it will commit everything.
+        # Calling commit() again here is a no-op in SQLAlchemy, but better to just rely on it or avoid double commit.
+        # For safety, since it's already committed, we don't strictly need it, but we can leave it.
+        # Wait, if we leave it, it's fine. Let's just return the user.
         return user
     
     
