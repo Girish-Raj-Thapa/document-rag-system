@@ -48,4 +48,5 @@ Thumbs.db
 backend/storage/uploads/*
 !backend/storage/uploads/.gitkeep
 backend/alembic/versions/*.pyc
-docs/
+backend/guide_docs/
+guide_docs/
