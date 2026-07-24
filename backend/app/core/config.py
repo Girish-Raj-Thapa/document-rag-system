@@ -35,6 +35,14 @@ class Settings(BaseSettings):
 
     # ── File Storage ──
     STORAGE_PATH: str = "storage/uploads"
+    MAX_UPLOAD_SIZE_MB: int = 25
+    ALLOWED_CONTENT_TYPES: set[str] = {
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/msword",
+        "text/plain",
+        "text/csv",
+    }
 
     # ── Celery ──
     CELERY_BROKER_URL: str = "redis://redis:6379/1"

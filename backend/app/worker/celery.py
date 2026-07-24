@@ -17,6 +17,7 @@ celery_app = Celery(
     "docrag",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
+    include=["app.modules.documents.tasks"]
 )
 
 # ── Celery Configuration ──
@@ -38,3 +39,10 @@ celery_app.conf.update(
     # Prevents one slow task from blocking others
     worker_prefetch_multiplier=1,
 )
+
+celery_app.conf.beat_schedule = {
+    "cleanup-orphaned-documents-hourly": {
+        "task": "documents.cleanup_orphaned_files",
+        "schedule": 3600.0,
+    },
+}
