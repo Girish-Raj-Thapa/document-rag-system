@@ -196,6 +196,7 @@ async def auth_client(client, make_user, db_session):
     
     # Store user id for assertions
     client.current_user_id = user.id
+    client.current_user = user
     
     return client
 
