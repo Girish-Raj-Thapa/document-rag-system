@@ -9,6 +9,7 @@ from app.core.config import get_settings
 from .models import Document
 from .repository import DocumentRepository
 from .storage import StorageProvider
+from .tasks import process_document_task
 
 class DocumentService:
     def __init__(self, session: AsyncSession, storage_provider: StorageProvider):
@@ -57,9 +58,9 @@ class DocumentService:
                 os.remove(storage_path)
             raise
 
-        # TODO: Phase 7 - Dispatch Celery task
-        # process_document_task.delay(str(doc.id))
-        print(f"STUB: Dispatched celery task for document {doc.id}")
+        # Dispatch Celery task
+        process_document_task.delay(str(doc.id))
+        print(f"Dispatched celery task for document {doc.id}")
 
         return doc
 
